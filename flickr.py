@@ -25,20 +25,25 @@ def params_unique_combination(baseurl, params_d, private_keys=["api_key"]):
             res.append("{}-{}".format(k, params_d[k]))
     return baseurl + "_".join(res)
 # changin
-def search_flickr_by_tags(tags, method="flickr.photos.search", photo_id=None):
+def search_flickr(params_diction)
+#def search_flickr(tags, method="flickr.photos.search", photo_id=None):
     if not FLICKR_API_KEY:
         raise Exception('Flickr API Key is missing!')
 
     baseurl = "https://api.flickr.com/services/rest/"
-    params_diction = {
-        "method": method,
-        "format": "json",
-        "api_key": FLICKR_API_KEY,
-        "tags": tags,
-        "per_page": 10,
-        "nojsoncallback": 1,
-        "photo_id": photo_id
-    }
+    params_diction["per_page"] = 10
+    params_diction["format"] = 'json'
+    params_diction["api_key"] = FLICKR_API_KEY
+    params_diction["nojsoncallback"] = 1
+#    params_diction = {
+#        "method": method,
+#        "format": "json",
+#        "api_key": FLICKR_API_KEY,
+#        "tags": tags,
+#        "per_page": 10,
+#        "nojsoncallback": 1,
+#        "photo_id": photo_id
+#    }
 
     unique_ident = params_unique_combination(baseurl,params_diction)
     if unique_ident in CACHE_DICTION:
@@ -54,19 +59,20 @@ def search_flickr_by_tags(tags, method="flickr.photos.search", photo_id=None):
 
 class Photo:
     def __init__(self, photo_dict):
-        self.title = photo_dict['title']
+        self.title = photo_dict['title']['_content']
         self.id = photo_dict['id']
         self.owner = photo_dict['owner']
+        self.owner_username = photo_dict['owner']['username']
 
     def __str__(self):
-        return '{0} by {1}'.format(self.title, self.owner)
+        return '{0} by {1}'.format(self.title, self.owner_username)
 
 
 CACHE_DICTION = load_cache_json()
 if DEBUG:
     print(CACHE_DICTION)
 
-results = search_flickr_by_tags('sunset summer')
+results = search_flickr({"tags": 'sunset summer', "method": "flickr.photos.search"})
 
 photos_list = []
 for r in results['photos']['photo']:
